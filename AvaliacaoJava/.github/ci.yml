@@ -1,0 +1,40 @@
+name: CI/CD - Sistema de Avaliação
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-test-package:
+    name: Build, Test e Empacotamento
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configuração do Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Build (compilação)
+        run: mvn -B clean compile
+
+      - name: Testes unitários
+        run: mvn -B test
+
+      - name: Geração do artefato
+        run: mvn -B package -DskipTests
+
+      - name: Publicação do artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: SistemaAvaliacao-jar
+          path: target/*.jar
+          if-no-files-found: error
